@@ -5,7 +5,7 @@ from .models import Case, Client, Lawyer
 class CaseForm(forms.ModelForm):
     class Meta:
         model = Case
-        fields = ['title', 'description', 'status', 'client', 'lawyer']
+        fields = ['title', 'description', 'status', 'client', 'lawyer', "document"]
         # template_name = 'cases/case_form.html'
 
 

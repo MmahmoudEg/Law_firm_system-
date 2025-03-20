@@ -3,6 +3,30 @@ from .models import Client, Case, Lawyer
 from .forms import ClientForm, LawyerForm, CaseForm
 from django.urls import reverse_lazy
 from django.db.models import Q
+from django.shortcuts import render, redirect, get_object_or_404
+from .forms import CaseForm
+from .models import Case
+
+def add_case(request):
+    if request.method == 'POST':
+        form = CaseForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('case_list')  # Adjust the redirect as needed
+    else:
+        form = CaseForm()
+    return render(request, 'add_case.html', {'form': form})
+
+def edit_case(request, case_id):
+    case = get_object_or_404(Case, id=case_id)
+    if request.method == 'POST':
+        form = CaseForm(request.POST, request.FILES, instance=case)
+        if form.is_valid():
+            form.save()
+            return redirect('case_detail', case_id=case.id)  # Adjust the redirect as needed
+    else:
+        form = CaseForm(instance=case)
+    return render(request, 'edit_case.html', {'form': form})
 
 class HomeView(TemplateView):
     template_name = "home.html"

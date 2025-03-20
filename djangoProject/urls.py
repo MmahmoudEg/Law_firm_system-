@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.conf.urls.static import static
 """
 URL configuration for djangoProject project.
 
@@ -23,4 +25,4 @@ urlpatterns = [
 
     # path('accounts/', include('django.contrib.auth.urls')),
     # path('two_factor/', include('two_factor.urls')),
-]
+]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
