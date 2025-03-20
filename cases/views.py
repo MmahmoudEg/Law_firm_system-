@@ -5,28 +5,118 @@ from django.urls import reverse_lazy
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import CaseForm
-from .models import Case
+from .models import Case, CaseDocument, Document
+from .forms import CaseForm, CaseDocumentForm
+# def add_case(request):
+#     if request.method == 'POST':
+#         form = CaseForm(request.POST, request.FILES)
+#         if form.is_valid():
+#             form.save()
+#             return redirect('case_list')  # Adjust the redirect as needed
+#     else:
+#         form = CaseForm()
+#     return render(request, 'add_case.html', {'form': form})
+
+# def add_case(request):
+#     if request.method == 'POST':
+#         case_form = CaseForm(request.POST)
+#         file_form = CaseDocumentMultiForm(request.POST, request.FILES)
+
+#         if case_form.is_valid() and file_form.is_valid():
+#             case = case_form.save()
+
+#             # Save multiple files
+#             files = request.FILES.getlist('files')
+#             for file in files:
+#                 CaseDocument.objects.create(case=case, file=file)
+
+#             return redirect('case_list')  # Adjust the redirect as needed
+
+#     else:
+#         case_form = CaseForm()
+#         file_form = CaseDocumentMultiForm()
+
+#     return render(request, 'add_case.html', {'case_form': case_form, 'file_form': file_form})
+
 
 def add_case(request):
     if request.method == 'POST':
-        form = CaseForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            return redirect('case_list')  # Adjust the redirect as needed
+        case_form = CaseForm(request.POST)
+        file_form = CaseDocumentForm(request.POST, request.FILES)
+
+        if case_form.is_valid():
+            case = case_form.save()
+
+            # Handle multiple file uploads
+            files = request.FILES.getlist('files')  # Get multiple files
+            for file in files:
+                CaseDocument.objects.create(case=case, file=file)
+
+            return redirect('case_list')  # Redirect to case list (adjust as needed)
+
     else:
-        form = CaseForm()
-    return render(request, 'add_case.html', {'form': form})
+        case_form = CaseForm()
+        file_form = CaseDocumentForm()
+
+    return render(request, 'add_case.html', {'case_form': case_form, 'file_form': file_form})
+
+# def edit_case(request, case_id):
+#     case = get_object_or_404(Case, id=case_id)
+#     if request.method == 'POST':
+#         form = CaseForm(request.POST, request.FILES, instance=case)
+#         if form.is_valid():
+#             form.save()
+#             return redirect('case_detail', case_id=case.id)  # Adjust the redirect as needed
+#     else:
+#         form = CaseForm(instance=case)
+#     return render(request, 'edit_case.html', {'form': form})
+
+# def edit_case(request, case_id):
+#     case = get_object_or_404(Case, id=case_id)
+
+#     if request.method == 'POST':
+#         case_form = CaseForm(request.POST, instance=case)
+#         file_form = CaseDocumentMultiForm(request.POST, request.FILES)
+
+#         if case_form.is_valid() and file_form.is_valid():
+#             case_form.save()
+
+#             # Save new files
+#             files = request.FILES.getlist('files')
+#             for file in files:
+#                 CaseDocument.objects.create(case=case, file=file)
+
+#             return redirect('case_detail', case_id=case.id)
+
+#     else:
+#         case_form = CaseForm(instance=case)
+#         file_form = CaseDocumentMultiForm()
+
+#     return render(request, 'edit_case.html', {'case_form': case_form, 'file_form': file_form, 'case': case})
+
 
 def edit_case(request, case_id):
     case = get_object_or_404(Case, id=case_id)
+
     if request.method == 'POST':
-        form = CaseForm(request.POST, request.FILES, instance=case)
-        if form.is_valid():
-            form.save()
-            return redirect('case_detail', case_id=case.id)  # Adjust the redirect as needed
+        case_form = CaseForm(request.POST, instance=case)
+        file_form = CaseDocumentForm(request.POST, request.FILES)
+
+        if case_form.is_valid():
+            case_form.save()
+
+            # Handle new file uploads
+            files = request.FILES.getlist('files')
+            for file in files:
+                CaseDocument.objects.create(case=case, file=file)
+
+            return redirect('case_detail', case_id=case.id)
+
     else:
-        form = CaseForm(instance=case)
-    return render(request, 'edit_case.html', {'form': form})
+        case_form = CaseForm(instance=case)
+        file_form = CaseDocumentForm()
+
+    return render(request, 'edit_case.html', {'case_form': case_form, 'file_form': file_form, 'case': case})
 
 class HomeView(TemplateView):
     template_name = "home.html"
@@ -147,3 +237,25 @@ class CaseDeleteView(DeleteView):
     model = Case
     template_name = "cases/case_confirm_delete.html"
     success_url = reverse_lazy("cases:case_list")
+
+
+def upload_documents(request, case_id):
+    case = Case.objects.get(id=case_id)
+
+    if request.method == "POST":
+        form = CaseDocumentForm(request.POST, request.FILES)
+        if form.is_valid():
+            files = request.FILES.getlist('documents')  # Ensure using getlist()
+            if not files:
+                print("No files received!")  # Debugging step
+            for file in files:
+                Document.objects.create(case=case, file=file)  # Saving each file
+            return redirect('cases:case_detail', case_id=case.id)
+        else:
+            print("Form is not valid!")  # Debugging step
+            print(form.errors)
+
+    else:
+        form = CaseDocumentForm()
+
+    return render(request, 'upload_documents.html', {'form': form})

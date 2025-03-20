@@ -47,11 +47,38 @@
 
     </form>
 
-    <form method="post" enctype="multipart/form-data">
+    <!-- <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form.as_p }}
         <button type="submit">Save</button>
+    </form> -->
+    
+
+    <!-- <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ case_form.as_p }}
+        <label>Upload Documents:</label>
+        <input type="file" name="files" multiple>  <!-- Allows selecting multiple files -->
+        <!-- <button type="submit">Save</button>
     </form>
     
+    {% if case.documents.all %}
+        <h3>Existing Documents:</h3>
+        <ul>
+            {% for doc in case.documents.all %}
+                <li><a href="{{ doc.file.url }}" target="_blank">{{ doc.file.name }}</a></li>
+            {% endfor %}
+        </ul>
+    {% endif %} --> -->
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="documents" multiple>
+        <button type="submit">Upload</button>
+    </form>
+    
+    
+
+
 {% endblock %}
 
