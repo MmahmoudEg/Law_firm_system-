@@ -23,9 +23,5 @@ urlpatterns = [
     path('cases/create/', views.CaseCreateView.as_view(), name='case_create'),
     path('cases/<int:pk>/update/', views.CaseUpdateView.as_view(), name='case_update'),
     path('cases/<int:pk>/delete/', views.CaseDeleteView.as_view(), name='case_delete'),
-    path('<int:case_pk>/documents/add/', views.DocumentCreateView.as_view(), name='document_create'),
-    path('documents/<int:pk>/delete/', views.DocumentDeleteView.as_view(), name='document_delete'),
-    path('create/', views.CaseCreateView.as_view(), name='case_create'),
-    path('<int:pk>/update/', views.CaseUpdateView.as_view(), name='case_update'),
-    
+
 ]

@@ -1,12 +1,9 @@
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, TemplateView
 from .models import Client, Case, Lawyer
-from .models import Document
-from .forms import ClientForm, LawyerForm, CaseForm, DocumentForm
+from .forms import ClientForm, LawyerForm, CaseForm
 from django.urls import reverse_lazy
 from django.db.models import Q
 
-
- 
 class HomeView(TemplateView):
     template_name = "home.html"
 
@@ -83,23 +80,22 @@ class CaseListView(ListView):
     context_object_name = 'cases'
     paginate_by = 10  # Optional pagination
 
-
     def get_queryset(self):
         queryset = super().get_queryset()
         search_query = self.request.GET.get('q')
-        
+
         if search_query:
             return queryset.filter(
                 Q(title__icontains=search_query) |
                 Q(description__icontains=search_query) |
                 Q(status__icontains=search_query) |
-                
+
                 # Client related searches
                 Q(client__first_name__icontains=search_query) |
                 Q(client__last_name__icontains=search_query) |
                 Q(client__email__icontains=search_query) |
                 Q(client__phone__icontains=search_query) |
-                
+
                 # Lawyer related searches
                 Q(lawyer__first_name__icontains=search_query) |
                 Q(lawyer__last_name__icontains=search_query) |
@@ -109,60 +105,21 @@ class CaseListView(ListView):
         return queryset
 
 
-# class CaseCreateView(CreateView):
-#     model = Case
-#     form_class = CaseForm
-#     template_name = "cases/case_form.html"
-#     success_url = "/cases/"
-
-
-# class CaseUpdateView(UpdateView):
-#     model = Case
-#     form_class = CaseForm
-#     template_name = "cases/case_form.html"
-#     success_url = "/cases/"
-
 class CaseCreateView(CreateView):
     model = Case
-    fields = '__all__'  # Or use your custom CaseForm
-    template_name = 'cases/case_create.html'
-    success_url = reverse_lazy('cases:case_list')
+    form_class = CaseForm
+    template_name = "cases/case_form.html"
+    success_url = "/cases/"
+
 
 class CaseUpdateView(UpdateView):
     model = Case
-    fields = '__all__'  # Or use your custom CaseForm
-    template_name = 'cases/case_update.html'
-    context_object_name = 'case'  # Explicit context name
+    form_class = CaseForm
+    template_name = "cases/case_form.html"
+    success_url = "/cases/"
+
 
 class CaseDeleteView(DeleteView):
     model = Case
     template_name = "cases/case_confirm_delete.html"
     success_url = reverse_lazy("cases:case_list")
-
-
-class DocumentCreateView(CreateView):
-    model = Document
-    form_class = DocumentForm
-    template_name = 'cases/document_form.html'
-
-    def form_valid(self, form):
-        form.instance.case = Case.objects.get(pk=self.kwargs['case_pk'])
-        return super().form_valid(form)
-
-    def get_success_url(self):
-        return reverse('cases:case_detail', kwargs={'pk': self.kwargs['case_pk']})
-
-
-class DocumentDeleteView(DeleteView):
-    model = Document
-    template_name = 'cases/document_confirm_delete.html'
-    
-    def get_success_url(self):
-        return reverse('cases:case_detail', kwargs={'pk': self.object.case.pk})
-        
-from django.views.generic import DetailView
-
-class CaseDetailView(DetailView):
-    model = Case
-    template_name = 'cases/case_detail.html'
-    context_object_name = 'case'

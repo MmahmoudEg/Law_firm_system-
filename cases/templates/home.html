@@ -30,8 +30,8 @@
 
     <div class="container mt-5">
         <div class="jumbotron bg-light border">
-            <h1 class="display-5 text-center">مرحبا بك في مكتب داوود للمحاماه!</h1>
-            <p class="lead text-center">العدل اساس الملك.</p>
+            <h1 class="display-5 text-center"> مرحباً بك في مكتب أ/اسامه داود للستشارات القانونية .</h1>
+            <p class="lead text-center">استخدم نظامنا المتكامل والشامل لإدارة احتياجات لمكتبك القانوني بكل كفاءة واحترافية .</p>
             <hr class="my-4">
 
             <div class="container">
@@ -47,33 +47,33 @@
                     </div>
                     <div class="col-sm-4 mb-3">
                         <div class="card text-white bg-success mb-3">
-                            <div class="card-header">Lawyers</div>
+                            <div class="card-header">المحاميين</div>
                             <div class="card-body">
                                 <h5 class="card-title">{{ lawyers_count }}</h5>
-                                <p class="card-text">Total Lawyers</p>
+                                <p class="card-text">اجمالي المحاميين</p>
                             </div>
                         </div>
                     </div>
                     <div class="col-sm-4 mb-3">
                         <div class="card text-white bg-danger mb-3">
-                            <div class="card-header">Cases</div>
+                            <div class="card-header">القضايا</div>
                             <div class="card-body">
                                 <h5 class="card-title">{{ cases_count }}</h5>
-                                <p class="card-text">Total Cases</p>
+                                <p class="card-text">اجمالي القضايا</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <p class="text-muted text-center">Explore client details, lawyer profiles, and case statuses with ease.</p>
+            <p class="text-muted text-center">اكتشف تفاصيل العملاء، وملفات المحاميين، وحالات القضايا بكل سهولة ويسر.</p>
             <div class="row justify-content-center">
 
                 <a class="animated-btn btn btn-primary btn-lg m-2" href="{% url 'cases:client_list' %}" role="button"><i
-                        class="fas fa-users"></i> View Clients</a>
+                        class="fas fa-users"></i> عرض العملاء</a>
                 <a class="animated-btn btn btn-secondary btn-lg m-2" href="{% url 'cases:lawyer_list' %}" role="button"><i
-                        class="fas fa-gavel"></i> View Lawyers</a>
+                        class="fas fa-gavel"></i> عرض المحاميين</a>
                 <a class="animated-btn btn btn-success btn-lg m-2" href="{% url 'cases:case_list' %}" role="button"><i
-                        class="fas fa-briefcase"></i> View Cases</a>
+                        class="fas fa-briefcase"></i> عرض القضايا</a>
             </div>
         </div>
     </div>

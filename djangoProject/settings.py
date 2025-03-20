@@ -11,11 +11,10 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 import dj_database_url
 from pathlib import Path
-import os
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -92,6 +91,7 @@ WSGI_APPLICATION = 'djangoProject.wsgi.application'
 #         'PORT': '5432',
 #     }
 # }
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -104,7 +104,7 @@ DATABASES = {
 }
 
 #DATABASES = {
-#    'default': dj_database_url.config(
+ #   'default': dj_database_url.config(
 #        # Replace this value with your local database's connection string.
 #        default='postgres://law_firm_proj_user:nLjAJPh8250S0rHe75juAe1AVvpaaHQc@dpg-cnvd15icn0vc73c7r9og-a/law_firm_proj',
 #        conn_max_age=600

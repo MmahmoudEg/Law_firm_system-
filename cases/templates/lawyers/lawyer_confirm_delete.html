@@ -1,13 +1,15 @@
+
+
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>Delete Lawyer</h2>
-    <p>Are you sure you want to delete "{{ object.first_name }} {{ object.last_name }}"?</p>
-    <form method="post">
+    <h2>حذف المحاميين</h2>
+    <p>هل أنت متأكد من رغبتك في الحذف  "{{ object.first_name }} {{ object.last_name }}"?</p>
+    <form method="post" action="{% url 'cases:lawyer_delete' object.pk %}">
         {% csrf_token %}
-        <a class="btn btn-sm btn-danger" href="{% url 'cases:lawyer_delete' lawyer.pk %}"><i class="fas fa-trash"></i>
-            Yes, delete</a>
-
-        <a href="{% url 'cases:lawyer_list' %}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-danger">
+            <i class="fas fa-trash"></i> حذف
+        </button>
+        <a href="{% url 'cases:lawyer_list' %}" class="btn btn-secondary">إلغاء</a>
     </form>
 {% endblock %}

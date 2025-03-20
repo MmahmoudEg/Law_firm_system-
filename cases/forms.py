@@ -1,5 +1,5 @@
 from django import forms
-from .models import Case, Client, Lawyer, Document
+from .models import Case, Client, Lawyer
 
 
 class CaseForm(forms.ModelForm):
@@ -21,13 +21,3 @@ class LawyerForm(forms.ModelForm):
         model = Lawyer
         fields = ['first_name', 'last_name', 'email', 'phone']
         # template_name = 'lawyers/lawyer_form.html'
-
-
-
-class DocumentForm(forms.ModelForm):
-    class Meta:
-        model = Document
-        fields = ['title', 'description', 'file', 'category']
-        widgets = {
-            'description': forms.Textarea(attrs={'rows': 3}),
-        }

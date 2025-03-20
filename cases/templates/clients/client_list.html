@@ -1,15 +1,32 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1 class="mb-4">Clients</h1>
-    <a class="btn btn-primary mb-3" href="{% url 'cases:client_create' %}">Add Client</a>
+<!-- Add this above the cases list --> مربع البحث
+<div class="mb-4">
+    <form method="get" action="{% url 'cases:client_list' %}">
+      <div class="input-group">
+        <input type="text"
+               class="form-control"
+               name="q"
+               placeholder="البحث عن عميل..."
+               value="{{ request.GET.q }}">
+        <button class="btn btn-outline-secondary" type="submit">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+    </form>
+  </div>
+<!-- مربع البحث -->
+
+    <h1 class="mb-4">العملاء</h1>
+    <a class="btn btn-primary mb-3" href="{% url 'cases:client_create' %}">إضافه عميل</a>
     <table class="table table-striped table-bordered">
         <thead class="thead-dark">
         <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Actions</th>
+            <th>الاسم</th>
+            <th>بريد الالكتروني</th>
+            <th>رقم الهاتف</th>
+            <th>إجراءات</th>
         </tr>
         </thead>
         <tbody>
@@ -19,13 +36,13 @@
                 <td>{{ client.email }}</td>
                 <td>{{ client.phone }}</td>
                 <td>
-                    <a class="btn btn-sm btn-info" href="{% url 'cases:client_update' client.pk %}">Edit</a>
-                    <a class="btn btn-sm btn-danger" href="{% url 'cases:client_delete' client.pk %}">Delete</a>
+                    <a class="btn btn-sm btn-info" href="{% url 'cases:client_update' client.pk %}">تعديل</a>
+                    <a class="btn btn-sm btn-danger" href="{% url 'cases:client_delete' client.pk %}">الغاء</a>
                 </td>
             </tr>
         {% empty %}
             <tr>
-                <td colspan="4" class="text-center"> No Clients found.</td>
+                <td colspan="4" class="text-center"> لم يتم العثور علي اي عميل.</td>
             </tr>
         {% endfor %}
         </tbody>
