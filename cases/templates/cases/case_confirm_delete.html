@@ -1,0 +1,17 @@
+
+
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Delete Case</h2>
+    <p>Are you sure you want to delete the case "{{ object.title }}"?</p>
+    <form method="post" action="{% url 'cases:case_delete' object.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">
+            <i class="fas fa-trash"></i> Yes, delete
+        </button>
+        <a href="{% url 'cases:case_list' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+{% endblock %}
+
+
