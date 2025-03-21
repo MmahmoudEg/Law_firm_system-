@@ -1,7 +1,13 @@
 from django import forms
 from .models import Case, Client, Lawyer
+from .models import Document
 
 
+class DocumentForm(forms.ModelForm):
+    class Meta:
+        model = Document
+        fields = ('file',)
+       
 class CaseForm(forms.ModelForm):
     class Meta:
         model = Case

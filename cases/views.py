@@ -6,6 +6,10 @@ from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import CaseForm
 from .models import Case
+from django.forms import inlineformset_factory
+from .models import Case, Document
+from .forms import CaseForm, DocumentForm
+
 
 def add_case(request):
     if request.method == 'POST':
@@ -129,13 +133,44 @@ class CaseListView(ListView):
         return queryset
 
 
-class CaseCreateView(CreateView):
-    model = Case
-    form_class = CaseForm
-    template_name = "cases/case_form.html"
-    success_url = "/cases/"
+# class CaseCreateView(CreateView):
+#     model = Case
+#     form_class = CaseForm
+#     template_name = "cases/case_form.html"
+#     success_url = "/cases/"
 
 
+def case_create(request):
+    DocumentFormSet = inlineformset_factory(
+        Case, 
+        Document, 
+        form=DocumentForm,
+        extra=3,
+        can_delete=True,
+        fields=('file',)
+    )
+    
+    if request.method == 'POST':
+        form = CaseForm(request.POST)
+        formset = DocumentFormSet(request.POST, request.FILES)
+        
+        if form.is_valid() and formset.is_valid():
+            case = form.save()
+            documents = formset.save(commit=False)
+            for document in documents:
+                document.case = case
+                document.save()
+            return redirect('cases:case_list')
+        
+
+def case_documents(request, pk):
+    case = get_object_or_404(Case, pk=pk)
+    documents = case.documents.all()
+    return render(request, 'cases/case_documents.html', {
+        'case': case,
+        'documents': documents
+    })
+# Similarly update case_update view
 class CaseUpdateView(UpdateView):
     model = Case
     form_class = CaseForm
@@ -147,3 +182,30 @@ class CaseDeleteView(DeleteView):
     model = Case
     template_name = "cases/case_confirm_delete.html"
     success_url = reverse_lazy("cases:case_list")
+
+class CaseCreateView(CreateView):
+    model = Case
+    form_class = CaseForm  # Make sure you have imported CaseForm
+    template_name = 'cases/case_form.html'  # Update with your actual template path
+    success_url = reverse_lazy('cases:case_list')  # Update with your success URL
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        DocumentFormSet = inlineformset_factory(
+            Case, 
+            Document,
+            form=DocumentForm,
+            extra=3
+        )
+        context['formset'] = DocumentFormSet()
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        formset = context['formset']
+        if formset.is_valid():
+            self.object = form.save()
+            formset.instance = self.object
+            formset.save()
+            return super().form_valid(form)
+        return self.form_invalid(form)
