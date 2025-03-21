@@ -214,9 +214,8 @@ class CaseCreateView(CreateView):
         if self.request.POST:
             context['formset'] = DocumentFormSet(self.request.POST, self.request.FILES)
         else:
-            context['formset'] = DocumentFormSet()
+            context['formset'] = DocumentFormSet(queryset=Document.objects.none())
         return context
-
 
     def form_valid(self, form):
         context = self.get_context_data()
@@ -225,7 +224,14 @@ class CaseCreateView(CreateView):
         if form.is_valid() and formset.is_valid():
             self.object = form.save()
             formset.instance = self.object
-            formset.save()
+            
+            # Save documents with case reference
+            for document_form in formset:
+                if document_form.cleaned_data.get('file'):
+                    document = document_form.save(commit=False)
+                    document.case = self.object
+                    document.save()
+            
             return super().form_valid(form)
-        else:
-            return self.form_invalid(form)
+        
+        return self.form_invalid(form)

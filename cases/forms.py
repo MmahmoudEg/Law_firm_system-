@@ -22,12 +22,27 @@ class CaseForm(forms.ModelForm):
 
 # Create the formset
 # In forms.py
+# DocumentFormSet = inlineformset_factory(
+#     Case,
+#     Document,
+#     fields=('title', 'file'),  # Add title here
+#     extra=1,
+#     can_delete=True,
+#     widgets={
+#         'title': forms.TextInput(attrs={'class': 'form-control'}),
+#         'file': forms.FileInput(attrs={'class': 'form-control-file'})
+#     }
+# )
 DocumentFormSet = inlineformset_factory(
     Case,
     Document,
-    fields=('title', 'file'),  # Include title here
+    fields=('title', 'file'),
     extra=1,
-    can_delete=True
+    can_delete=True,
+    widgets={
+        'title': forms.TextInput(attrs={'class': 'form-control'}),
+        'file': forms.ClearableFileInput(attrs={'class': 'form-control-file'})
+    }
 )
 class ClientForm(forms.ModelForm):
     class Meta:
