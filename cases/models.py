@@ -37,17 +37,21 @@ class Case(models.Model):
     lawyer = models.ForeignKey(Lawyer, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    document = models.FileField(upload_to='documents/', blank=True, null=True)
-
+    
     def __str__(self):
         return self.title
     
 # Add Document model
 
 class Document(models.Model):
-    case = models.ForeignKey(Case, on_delete=models.CASCADE, related_name='documents')
+    case = models.ForeignKey(
+        Case, 
+        on_delete=models.CASCADE,
+        related_name='documents'
+    )
+    title = models.CharField(max_length=255)
     file = models.FileField(upload_to='case_documents/')
-    uploaded_at = models.DateTimeField(auto_now_add=True)
-
+    created_at = models.DateTimeField(auto_now_add=True)
+    
     def __str__(self):
-        return f"Document {self.file.name}"
+        return self.title

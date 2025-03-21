@@ -1,6 +1,7 @@
 from django import forms
 from .models import Case, Client, Lawyer
 from .models import Document
+from django.forms import inlineformset_factory
 
 
 class DocumentForm(forms.ModelForm):
@@ -8,13 +9,26 @@ class DocumentForm(forms.ModelForm):
         model = Document
         fields = ('file',)
        
+# class CaseForm(forms.ModelForm):
+#     class Meta:
+#         model = Case
+#         fields = ['title', 'description', 'status', 'client', 'lawyer', "document"]
+#         # template_name = 'cases/case_form.html'
+
 class CaseForm(forms.ModelForm):
     class Meta:
         model = Case
-        fields = ['title', 'description', 'status', 'client', 'lawyer', "document"]
-        # template_name = 'cases/case_form.html'
+        fields = ['title', 'client', 'lawyer', 'status',  'description']
 
-
+# Create the formset
+# In forms.py
+DocumentFormSet = inlineformset_factory(
+    Case,
+    Document,
+    fields=('title', 'file'),  # Include title here
+    extra=1,
+    can_delete=True
+)
 class ClientForm(forms.ModelForm):
     class Meta:
         model = Client

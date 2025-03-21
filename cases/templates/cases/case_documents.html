@@ -5,7 +5,7 @@
   {% for document in documents %}
     <li>
       <a href="{{ document.file.url }}" target="_blank">{{ document.file.name }}</a>
-      <small>(Uploaded: {{ document.uploaded_at }})</small>
+      <small>(Uploaded: {{ document.created_at }})</small>
     </li>
   {% empty %}
     <li>No documents found</li>

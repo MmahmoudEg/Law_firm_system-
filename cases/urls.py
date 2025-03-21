@@ -1,6 +1,8 @@
 from django.urls import path
 
 from cases import views
+from .views import CaseCreateView
+
 
 app_name = 'cases'  # the prefix before any url
 
@@ -24,5 +26,5 @@ urlpatterns = [
     path('cases/<int:pk>/update/', views.CaseUpdateView.as_view(), name='case_update'),
     path('cases/<int:pk>/delete/', views.CaseDeleteView.as_view(), name='case_delete'),
     path('case/<int:pk>/documents/', views.case_documents, name='case_documents'),
-
+    path('case/create/', CaseCreateView.as_view(), name='case_create'),
 ]

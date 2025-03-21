@@ -8,7 +8,7 @@ from .forms import CaseForm
 from .models import Case
 from django.forms import inlineformset_factory
 from .models import Case, Document
-from .forms import CaseForm, DocumentForm
+from .forms import CaseForm, DocumentFormSet
 
 
 def add_case(request):
@@ -140,29 +140,49 @@ class CaseListView(ListView):
 #     success_url = "/cases/"
 
 
-def case_create(request):
-    DocumentFormSet = inlineformset_factory(
-        Case, 
-        Document, 
-        form=DocumentForm,
-        extra=3,
-        can_delete=True,
-        fields=('file',)
-    )
+# def case_create(request):
+#     DocumentFormSet = inlineformset_factory(
+#         Case, 
+#         Document, 
+#         form=DocumentForm,
+#         extra=3,
+#         can_delete=True,
+#         fields=('file',)
+#     )
     
+#     if request.method == 'POST':
+#         form = CaseForm(request.POST)
+#         formset = DocumentFormSet(request.POST, request.FILES)
+        
+#         if form.is_valid() and formset.is_valid():
+#             case = form.save()
+#             documents = formset.save(commit=False)
+#             for document in documents:
+#                 document.case = case
+#                 document.save()
+#             return redirect('cases:case_list')
+def case_create(request):
     if request.method == 'POST':
         form = CaseForm(request.POST)
-        formset = DocumentFormSet(request.POST, request.FILES)
-        
-        if form.is_valid() and formset.is_valid():
-            case = form.save()
-            documents = formset.save(commit=False)
-            for document in documents:
-                document.case = case
-                document.save()
-            return redirect('cases:case_list')
-        
-
+        if form.is_valid():
+            # Add debug print before saving
+            print("Form is valid. Attempting to save...")
+            try:
+                case = form.save()
+                print(f"Successfully saved case ID {case.id}")
+                return redirect('cases:case_list')
+            except Exception as e:
+                print(f"Error saving case: {str(e)}")
+                form.add_error(None, f"Error saving case: {str(e)}")
+        else:
+            # Print detailed form errors
+            print("Form invalid. Errors:")
+            for field, errors in form.errors.items():
+                print(f"{field}: {', '.join(errors)}")
+    else:
+        form = CaseForm()
+    
+    return render(request, 'cases/case_form.html', {'form': form})
 def case_documents(request, pk):
     case = get_object_or_404(Case, pk=pk)
     documents = case.documents.all()
@@ -185,27 +205,27 @@ class CaseDeleteView(DeleteView):
 
 class CaseCreateView(CreateView):
     model = Case
-    form_class = CaseForm  # Make sure you have imported CaseForm
-    template_name = 'cases/case_form.html'  # Update with your actual template path
-    success_url = reverse_lazy('cases:case_list')  # Update with your success URL
+    form_class = CaseForm
+    template_name = 'cases/case_form.html'
+    success_url = reverse_lazy('cases:case_list')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        DocumentFormSet = inlineformset_factory(
-            Case, 
-            Document,
-            form=DocumentForm,
-            extra=3
-        )
-        context['formset'] = DocumentFormSet()
+        if self.request.POST:
+            context['formset'] = DocumentFormSet(self.request.POST, self.request.FILES)
+        else:
+            context['formset'] = DocumentFormSet()
         return context
+
 
     def form_valid(self, form):
         context = self.get_context_data()
         formset = context['formset']
-        if formset.is_valid():
+        
+        if form.is_valid() and formset.is_valid():
             self.object = form.save()
             formset.instance = self.object
             formset.save()
             return super().form_valid(form)
-        return self.form_invalid(form)
+        else:
+            return self.form_invalid(form)
