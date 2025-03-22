@@ -85,9 +85,12 @@ class LawyerListView(ListView):
 class LawyerCreateView(CreateView):
     model = Lawyer
     form_class = LawyerForm
-    template_name = "lawyers/lawyer_form.html"
-    success_url = "/lawyers/"
+    template_name = 'cases/lawyer_form.html'
+    success_url = reverse_lazy('cases:lawyer_list')
 
+    # Remove ALL custom logic from form_valid
+    def form_valid(self, form):
+        return super().form_valid(form)  # Let Django handle saving
 
 class LawyerUpdateView(UpdateView):
     model = Lawyer
