@@ -29,10 +29,10 @@ class Case(models.Model):
         ('OPEN', 'مفتوح'),
         ('CLOSED', 'مغلق')
     )
+    case_number = models.CharField(max_length=20, unique=True, blank=False, null=False)
     title = models.CharField(max_length=100)
     description = models.TextField()
     status = models.CharField(max_length=10, choices=STATUS_CHOICES)
-
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     lawyer = models.ForeignKey(Lawyer, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)

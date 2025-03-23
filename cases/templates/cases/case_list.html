@@ -23,6 +23,7 @@
     <thead class="thead-dark">
         <tr>
             <th>التاريخ</th>
+            <th>رقم القضية</th>
             <th>العنوان</th>
             <th>الحاله</th>
             <th>العميل</th>
@@ -34,6 +35,8 @@
         {% for case in object_list %}
         <tr>
             <td>{{ case.created_at|date:"Y-m-d H:i" }}</td>
+            <td><a href="#" class="case-number" data-description="{{ case.description }}">{{ case.case_number }}</a></td>
+            <td>{{ case.title }}</td>
             <td>{{ case.title }}</td>
             <td>{{ case.get_status_display }}</td>
             <td>{{ case.client.first_name }} {{ case.client.last_name }}</td>
