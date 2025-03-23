@@ -19,11 +19,13 @@
 
 <h1 class="mb-4">القضايا</h1>
 <a class="btn btn-primary mb-3" href="{% url 'cases:case_create' %}">إضافه قضايا</a>
+
 <table class="table table-striped table-bordered">
     <thead class="thead-dark">
         <tr>
             <th>التاريخ</th>
             <th>رقم القضية</th>
+            <th>المحكمة</th>
             <th>العنوان</th>
             <th>الحاله</th>
             <th>العميل</th>
@@ -35,18 +37,21 @@
         {% for case in object_list %}
         <tr>
             <td>{{ case.created_at|date:"Y-m-d H:i" }}</td>
-            <td><a href="#" class="case-number" data-description="{{ case.description }}">{{ case.case_number }}</a></td>
-            <td>{{ case.title }}</td>
+
+            <!-- ✅ Clicking this will open the modal and show the description -->
+            <td>
+                <a href="#" class="case-number" data-description="{{ case.description }}" data-bs-toggle="modal" data-bs-target="#caseDescriptionModal">
+                    {{ case.case_number }}
+                </a>
+            </td>
+            <td>{{ case.get_court_display }}</td>
             <td>{{ case.title }}</td>
             <td>{{ case.get_status_display }}</td>
             <td>{{ case.client.first_name }} {{ case.client.last_name }}</td>
             <td>{{ case.lawyer.first_name }} {{ case.lawyer.last_name }}</td>
             <td>
-                <!-- English Buttons (Remove these) -->
-                <!-- Arabic Buttons with Document View -->
                 <a class="btn btn-sm btn-info" href="{% url 'cases:case_update' case.pk %}">تعديل</a>
-                <a class="btn btn-sm btn-danger" href="{% url 'cases:case_delete' case.pk %}">الغاء</a>
-                <!-- Add View Documents button here -->
+                <a class="btn btn-sm btn-danger" href="{% url 'cases:case_delete' case.pk %}">إلغاء</a>
                 <a href="{% url 'cases:case_documents' pk=case.pk %}" class="btn btn-sm btn-warning">
                     المستندات
                 </a>
@@ -54,9 +59,40 @@
         </tr>
         {% empty %}
         <tr>
-            <td colspan="5" class="text-center">لم يتم العثور علي اي قضايا.</td>
+            <td colspan="7" class="text-center">لم يتم العثور علي اي قضايا.</td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+
+<!-- ✅ Case Description Modal -->
+<div class="modal fade" id="caseDescriptionModal" tabindex="-1" aria-labelledby="caseDescriptionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="caseDescriptionModalLabel">تفاصيل القضية</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="modal-case-description"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ✅ JavaScript to Open Modal and Show Description -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('.case-number').forEach(function (element) {
+        element.addEventListener('click', function () {
+            const description = this.getAttribute('data-description');
+            document.getElementById('modal-case-description').textContent = description;
+        });
+    });
+});
+</script>
+
 {% endblock %}

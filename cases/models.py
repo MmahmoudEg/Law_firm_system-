@@ -29,12 +29,20 @@ class Case(models.Model):
         ('OPEN', 'مفتوح'),
         ('CLOSED', 'مغلق')
     )
+    COURT_CHOICES = (
+        ('CAIRO_COURT', 'محكمة القاهرة'),
+        ('ALEX_COURT', 'محكمة الإسكندرية'),
+        ('GIZA_COURT', 'محكمة الجيزة'),
+        ('LUXOR_COURT', 'محكمة الأقصر'),
+        ('ASWAN_COURT', 'محكمة أسوان'),
+    )
     case_number = models.CharField(max_length=20, unique=True, blank=False, null=False)
     title = models.CharField(max_length=100)
     description = models.TextField()
     status = models.CharField(max_length=10, choices=STATUS_CHOICES)
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     lawyer = models.ForeignKey(Lawyer, on_delete=models.CASCADE)
+    court = models.CharField(max_length=20, choices=COURT_CHOICES, default='CAIRO_COURT')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
