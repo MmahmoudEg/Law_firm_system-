@@ -10,9 +10,13 @@
                     <h5 class="mb-1">{{ document.title }}</h5>
                     <small>Uploaded: {{ document.upload_date|date:"M d, Y H:i" }}</small>
                 </div>
-                <a href="{{ document.file.url }}" class="btn btn-sm btn-outline-primary" download>
-                    Download
-                </a>
+                {% if document.file %}
+                    <a href="{{ document.file.url }}" class="btn btn-sm btn-outline-primary" download>
+                        Download
+                    </a>
+                {% else %}
+                    <span class="text-danger">No file uploaded</span>
+                {% endif %}
             </div>
         </div>
         {% empty %}
