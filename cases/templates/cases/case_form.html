@@ -107,21 +107,47 @@
     <div id="documents-container">
         {% for form in formset %}
         <div class="document-form">
-            {{ form.id }}
-            <div class="form-group">
-                <label>عنوان المستند:</label>
-                {{ form.title|add_class:"form-control" }}
-                {{ form.title.errors }}
-            </div>
-            <div class="form-group">
-                <label>الملف:</label>
-                {{ form.file|add_class:"form-control-file" }}
-                {{ form.file.errors }}
-            </div>
-            {% if form.instance.pk %}
-                {{ form.DELETE }} حذف
-            {% endif %}
-        </div>
+          {{ form.id }}
+          <div class="form-group">
+              <label>عنوان المستند:</label>
+              {{ form.title|add_class:"form-control" }}
+              {{ form.title.errors }}
+          </div>
+          <div class="form-group">
+              <label>الملف:</label>
+              {% if form.instance.file %}
+                  <div class="mb-2">
+                      <a href="{{ form.instance.file.url }}" target="_blank" class="btn btn-sm btn-info">
+                          <i class="fas fa-file"></i> الملف الحالي
+                      </a>
+                      <span class="text-muted">(اترك الحقل فارغاً للحفاظ على الملف الحالي)</span>
+                  </div>
+              {% endif %}
+              {{ form.file|add_class:"form-control-file" }}
+              {{ form.file.errors }}
+          </div>
+          {% if form.instance.pk %}
+              <div class="form-check">
+                  {{ form.DELETE|add_class:"form-check-input" }}
+                  <label class="form-check-label text-danger">حذف</label>
+              </div>
+          {% endif %}
+      </div>
+        <div id="documents-container">
+          <!-- Existing documents will be here -->
+          
+          <!-- Hidden empty template (add this at the end) -->
+          <div class="document-form" style="display: none;">
+              <div class="form-group">
+                  <label>عنوان المستند:</label>
+                  <input type="text" name="documents-__prefix__-title" class="form-control">
+              </div>
+              <div class="form-group">
+                  <label>الملف:</label>
+                  <input type="file" name="documents-__prefix__-file" class="form-control-file">
+              </div>
+          </div>
+      </div>
         {% endfor %}
     </div>
     <button type="button" class="btn btn-sm btn-secondary mt-2" id="add-document">
@@ -132,6 +158,12 @@
   <button type="submit" class="btn btn-primary">حفظ</button>
   <a class="btn btn-secondary" href="{% url 'cases:case_list' %}">الغاء</a>
 </form>
+<style>
+  .optional-file {
+      border: 2px dashed #ccc;
+      padding: 5px;
+  }
+  </style>
 
 <!-- <script>
   document.addEventListener('DOMContentLoaded', function() {
@@ -161,30 +193,39 @@
   </script> -->
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const container = document.getElementById('documents-container');
-        const addButton = document.getElementById('add-document');
-        const totalForms = document.getElementById('id_documents-TOTAL_FORMS');
+    const container = document.getElementById('documents-container');
+    const addButton = document.getElementById('add-document');
+    const totalForms = document.getElementById('id_documents-TOTAL_FORMS');
+    
+    // Initialize with existing form count
+    let formCount = container.querySelectorAll('.document-form').length;
+
+    addButton.addEventListener('click', function(e) {
+        e.preventDefault();
+        const newForm = container.lastElementChild.cloneNode(true);
+        const regex = /-(\d+)-/g;
         
-        let formCount = parseInt(totalForms.value);
-    
-        addButton.addEventListener('click', function(e) {
-            e.preventDefault();
-            const newForm = container.children[0].cloneNode(true);
-            
-            // Update all input names and IDs
-            const regex = /-(\d+)-/g;
-            newForm.innerHTML = newForm.innerHTML.replace(regex, `-${formCount}-`);
-            
-            // Clear input values
-            newForm.querySelectorAll('input').forEach(input => {
-                if (input.type !== 'hidden') input.value = '';
-                if (input.type === 'checkbox') input.checked = false;
-            });
-    
-            container.appendChild(newForm);
-            formCount++;
-            totalForms.value = formCount;
+        // Clear existing file preview and values
+        newForm.querySelectorAll('input').forEach(input => {
+            if (input.type === 'file') {
+                input.value = '';
+                input.required = true;  // Only require for new files
+                input.classList.remove('optional-file');
+            }
+            if (input.type === 'text') input.value = '';
+            if (input.type === 'checkbox') input.checked = false;
         });
+
+        // Remove existing file link preview
+        const filePreview = newForm.querySelector('.mb-2');
+        if (filePreview) filePreview.remove();
+
+        // Update indices
+        newForm.innerHTML = newForm.innerHTML.replace(regex, `-${formCount}-`);
+        container.appendChild(newForm);
+        formCount++;
+        totalForms.value = formCount;
     });
+});
     </script>
 {% endblock %}

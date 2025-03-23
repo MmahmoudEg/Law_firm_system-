@@ -197,9 +197,45 @@ def case_documents(request, pk):
 class CaseUpdateView(UpdateView):
     model = Case
     form_class = CaseForm
-    template_name = "cases/case_form.html"
-    success_url = "/cases/"
+    template_name = 'cases/case_form.html'
+    success_url = reverse_lazy('cases:case_list')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.POST:
+            context['formset'] = DocumentFormSet(
+                self.request.POST, 
+                self.request.FILES, 
+                instance=self.object
+            )
+        else:
+            # Show existing documents + one empty form
+            context['formset'] = DocumentFormSet(
+                instance=self.object,
+                queryset=Document.objects.filter(case=self.object))
+        return context
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        formset = context['formset']
+        
+        if form.is_valid() and formset.is_valid():
+            self.object = form.save()
+            formset.instance = self.object
+            
+            for document_form in formset:
+                if document_form.cleaned_data.get('DELETE'):
+                    document_form.instance.delete()
+                elif document_form.has_changed():
+                    document = document_form.save(commit=False)
+                    # Only update file if new one was provided
+                    if not document.file and document_form.instance.file:
+                        document.file = document_form.instance.file
+                    document.save()
+            
+            return super().form_valid(form)
+        
+        return self.form_invalid(form)
 
 class CaseDeleteView(DeleteView):
     model = Case

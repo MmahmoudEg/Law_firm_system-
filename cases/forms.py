@@ -7,8 +7,22 @@ from django.forms import inlineformset_factory
 class DocumentForm(forms.ModelForm):
     class Meta:
         model = Document
-        fields = ('file',)
-       
+        fields = ('title', 'file')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance.pk:  # Existing document
+            self.fields['file'].required = False
+            self.fields['file'].widget.attrs['class'] = 'form-control-file optional-file'
+
+DocumentFormSet = inlineformset_factory(
+    Case,
+    Document,
+    form=DocumentForm,
+    extra=1,
+    can_delete=True,
+    fields=('title', 'file')
+)       
 # class CaseForm(forms.ModelForm):
 #     class Meta:
 #         model = Case
