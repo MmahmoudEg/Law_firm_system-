@@ -109,7 +109,8 @@ class CaseListView(ListView):
     model = Case
     template_name = "cases/case_list.html"
     context_object_name = 'cases'
-    paginate_by = 10  # Optional pagination
+    # paginate_by = 10  # Optional pagination
+    ordering = ['-created_at']  # newest first
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -133,37 +134,10 @@ class CaseListView(ListView):
                 Q(lawyer__email__icontains=search_query) |
                 Q(lawyer__phone__icontains=search_query)
             ).distinct()
-        return queryset
+        return queryset.order_by('-created_at')
 
 
-# class CaseCreateView(CreateView):
-#     model = Case
-#     form_class = CaseForm
-#     template_name = "cases/case_form.html"
-#     success_url = "/cases/"
 
-
-# def case_create(request):
-#     DocumentFormSet = inlineformset_factory(
-#         Case, 
-#         Document, 
-#         form=DocumentForm,
-#         extra=3,
-#         can_delete=True,
-#         fields=('file',)
-#     )
-    
-#     if request.method == 'POST':
-#         form = CaseForm(request.POST)
-#         formset = DocumentFormSet(request.POST, request.FILES)
-        
-#         if form.is_valid() and formset.is_valid():
-#             case = form.save()
-#             documents = formset.save(commit=False)
-#             for document in documents:
-#                 document.case = case
-#                 document.save()
-#             return redirect('cases:case_list')
 def case_create(request):
     if request.method == 'POST':
         form = CaseForm(request.POST)
@@ -226,7 +200,7 @@ class CaseUpdateView(UpdateView):
             for document_form in formset:
                 if document_form.cleaned_data.get('DELETE'):
                     document_form.instance.delete()
-                else:
+                elif document_form.cleaned_data.get('file'):  # ✅ Only save if a file is uploaded
                     document = document_form.save(commit=False)
                     
                     # Ensure the existing file is retained if no new file is uploaded
@@ -235,6 +209,7 @@ class CaseUpdateView(UpdateView):
                         document.file = existing_document.file  # Retain previous file
                     
                     document.save()
+
             
             formset.save()
             return super().form_valid(form)

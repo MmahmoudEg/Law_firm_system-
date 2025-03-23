@@ -50,7 +50,7 @@ class Document(models.Model):
         related_name='documents'
     )
     title = models.CharField(max_length=255)
-    file = models.FileField(upload_to='case_documents/')
+    file = models.FileField(upload_to="documents/", null=False, blank=False)
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
