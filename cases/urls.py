@@ -27,4 +27,6 @@ urlpatterns = [
     path('cases/<int:pk>/delete/', views.CaseDeleteView.as_view(), name='case_delete'),
     path('case/<int:pk>/documents/', views.case_documents, name='case_documents'),
     path('case/create/', CaseCreateView.as_view(), name='case_create'),
+   
+    
 ]

@@ -188,8 +188,8 @@ def case_create(request):
     return render(request, 'cases/case_form.html', {'form': form})
 def case_documents(request, pk):
     case = get_object_or_404(Case, pk=pk)
-    documents = case.documents.all()
-    return render(request, 'cases/case_documents.html', {
+    documents = Document.objects.filter(case=case)
+    return render(request, 'cases/documents_list.html', {
         'case': case,
         'documents': documents
     })
@@ -274,3 +274,4 @@ class CaseCreateView(CreateView):
             return super().form_valid(form)
         
         return self.form_invalid(form)
+    
