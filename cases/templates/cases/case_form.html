@@ -1,43 +1,43 @@
 {% extends 'base.html' %}
 {% load widget_tweaks %}
+
 {% block content %}
+{{ form.media }}
+
 <style>
   .document-form {
       border: 1px solid #ddd;
       padding: 15px;
       margin-bottom: 15px;
       border-radius: 5px;
+      background: #f9f9f9;
   }
 </style>
+
 <h1 class="mb-4">
   {% if object %}
     <a class="btn btn-sm btn-info" href="{% url 'cases:client_update' object.client.pk %}">
       <i class="fas fa-edit"></i> تعديل
     </a>
   {% else %} 
-    إضافه 
+    إضافة 
   {% endif %} 
   القضايا
 </h1>
 
-<form method="post" action="{% url 'cases:case_create' %}" enctype="multipart/form-data">
+<form method="post" action="{% if object %}{% url 'cases:case_update' object.pk %}{% else %}{% url 'cases:case_create' %}{% endif %}" enctype="multipart/form-data">
   {% csrf_token %}
   {{ form.non_field_errors }}
 
   <div class="form-row">
     <div class="form-group col-md-6">
       <label for="{{ form.title.id_for_label }}">العنوان:</label>
-      <input type="text" 
-             class="form-control {% if form.title.errors %}is-invalid{% endif %}" 
-             id="{{ form.title.id_for_label }}" 
-             name="{{ form.title.html_name }}" 
-             value="{{ form.title.value|default:'' }}" 
-             required>
+      {{ form.title|add_class:"form-control" }}
       {% for error in form.title.errors %}
         <div class="invalid-feedback">{{ error }}</div>
       {% endfor %}
     </div>
-    
+
     <div class="form-group col-md-6">
       <label for="{{ form.client.id_for_label }}">العميل:</label>
       {{ form.client|add_class:"form-control" }}
@@ -55,9 +55,9 @@
         <div class="invalid-feedback">{{ error }}</div>
       {% endfor %}
     </div>
-    
+
     <div class="form-group col-md-6">
-      <label for="{{ form.status.id_for_label }}">الحاله:</label>
+      <label for="{{ form.status.id_for_label }}">الحالة:</label>
       {{ form.status|add_class:"form-control" }}
       {% for error in form.status.errors %}
         <div class="invalid-feedback">{{ error }}</div>
@@ -65,42 +65,14 @@
     </div>
   </div>
 
-  <!-- <div class="form-group">
-    <label for="{{ form.document.id_for_label }}">المستند:</label>
-    {{ form.document|add_class:"form-control-file" }}
-    {% for error in form.document.errors %}
-      <div class="invalid-feedback">{{ error }}</div>
-    {% endfor %}
-  </div> -->
-
   <div class="form-group">
     <label for="{{ form.description.id_for_label }}">الوصف:</label>
-    <textarea class="form-control {% if form.description.errors %}is-invalid{% endif %}" 
-              id="{{ form.description.id_for_label }}" 
-              name="{{ form.description.html_name }}" 
-              rows="5" 
-              required>{{ form.description.value|default:'' }}</textarea>
+    {{ form.description|add_class:"form-control" }}
     {% for error in form.description.errors %}
       <div class="invalid-feedback">{{ error }}</div>
     {% endfor %}
   </div>
 
-  <!-- <div class="form-group">
-    <h4>المستندات:</h4>
-    {{ formset.management_form }}
-    <div id="documents-container">
-      {% for doc_form in formset %}
-        <div class="document-form mb-2">
-          {{ doc_form.file|add_class:"form-control-file" }}
-          {% if doc_form.errors %}
-            <div class="text-danger">{{ doc_form.errors }}</div>
-          {% endif %}
-          {% if doc_form.instance.pk %}{{ doc_form.DELETE }} حذف{% endif %}
-        </div>
-      {% endfor %}
-    </div>
-    <button class="btn btn-sm btn-secondary mt-2 add-document">إضافة مستند آخر</button>
-  </div> -->
   <div class="form-group">
     <h4>المستندات:</h4>
     {{ formset.management_form }}
@@ -132,100 +104,54 @@
                   <label class="form-check-label text-danger">حذف</label>
               </div>
           {% endif %}
-      </div>
-        <div id="documents-container">
-          <!-- Existing documents will be here -->
-          
-          <!-- Hidden empty template (add this at the end) -->
-          <div class="document-form" style="display: none;">
-              <div class="form-group">
-                  <label>عنوان المستند:</label>
-                  <input type="text" name="documents-__prefix__-title" class="form-control">
-              </div>
-              <div class="form-group">
-                  <label>الملف:</label>
-                  <input type="file" name="documents-__prefix__-file" class="form-control-file">
-              </div>
-          </div>
-      </div>
+        </div>
         {% endfor %}
     </div>
+
+    <!-- Hidden empty template -->
+    <div id="empty-form" class="document-form" style="display: none;">
+        <div class="form-group">
+            <label>عنوان المستند:</label>
+            <input type="text" name="documents-__prefix__-title" class="form-control">
+        </div>
+        <div class="form-group">
+            <label>الملف:</label>
+            <input type="file" name="documents-__prefix__-file" class="form-control-file">
+        </div>
+    </div>
+
     <button type="button" class="btn btn-sm btn-secondary mt-2" id="add-document">
         <i class="fas fa-plus"></i> إضافة مستند آخر
     </button>
-</div>
+  </div>
+
   <br>
   <button type="submit" class="btn btn-primary">حفظ</button>
-  <a class="btn btn-secondary" href="{% url 'cases:case_list' %}">الغاء</a>
+  <a class="btn btn-secondary" href="{% url 'cases:case_list' %}">إلغاء</a>
 </form>
-<style>
-  .optional-file {
-      border: 2px dashed #ccc;
-      padding: 5px;
-  }
-  </style>
 
-<!-- <script>
-  document.addEventListener('DOMContentLoaded', function() {
-      const container = document.getElementById('documents-container');
-      const addButton = document.getElementById('add-document');
-      const totalForms = document.getElementById('id_documents-TOTAL_FORMS');
-      let formCount = parseInt(totalForms.value);
-  
-      addButton.addEventListener('click', function(e) {
-          e.preventDefault();
-          
-          const newForm = container.querySelector('.document-form').cloneNode(true);
-          const regex = /documents-(\d+)-/g;
-          const replacement = `documents-${formCount}-`;
-          
-          newForm.innerHTML = newForm.innerHTML.replace(regex, replacement);
-          newForm.querySelectorAll('input').forEach(input => {
-              input.value = '';
-              input.checked = false;
-          });
-          
-          container.appendChild(newForm);
-          formCount++;
-          totalForms.value = formCount;
-      });
-  });
-  </script> -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
+<script>
+document.addEventListener('DOMContentLoaded', function() {
     const container = document.getElementById('documents-container');
     const addButton = document.getElementById('add-document');
     const totalForms = document.getElementById('id_documents-TOTAL_FORMS');
-    
-    // Initialize with existing form count
-    let formCount = container.querySelectorAll('.document-form').length;
+    const emptyForm = document.getElementById('empty-form');
+
+    let formCount = container.children.length;
 
     addButton.addEventListener('click', function(e) {
         e.preventDefault();
-        const newForm = container.lastElementChild.cloneNode(true);
-        const regex = /-(\d+)-/g;
-        
-        // Clear existing file preview and values
-        newForm.querySelectorAll('input').forEach(input => {
-            if (input.type === 'file') {
-                input.value = '';
-                input.required = true;  // Only require for new files
-                input.classList.remove('optional-file');
-            }
-            if (input.type === 'text') input.value = '';
-            if (input.type === 'checkbox') input.checked = false;
-        });
+        let newForm = emptyForm.cloneNode(true);
+        newForm.style.display = 'block';
 
-        // Remove existing file link preview
-        const filePreview = newForm.querySelector('.mb-2');
-        if (filePreview) filePreview.remove();
-
-        // Update indices
-        newForm.innerHTML = newForm.innerHTML.replace(regex, `-${formCount}-`);
+        const regex = /__prefix__/g;
+        newForm.innerHTML = newForm.innerHTML.replace(regex, formCount);
         container.appendChild(newForm);
+        
         formCount++;
         totalForms.value = formCount;
     });
 });
-    </script>
+</script>
+
 {% endblock %}

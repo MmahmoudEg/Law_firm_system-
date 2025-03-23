@@ -226,16 +226,21 @@ class CaseUpdateView(UpdateView):
             for document_form in formset:
                 if document_form.cleaned_data.get('DELETE'):
                     document_form.instance.delete()
-                elif document_form.has_changed():
+                else:
                     document = document_form.save(commit=False)
-                    # Only update file if new one was provided
-                    if not document.file and document_form.instance.file:
-                        document.file = document_form.instance.file
+                    
+                    # Ensure the existing file is retained if no new file is uploaded
+                    if not document_form.cleaned_data.get('file') and document_form.instance.pk:
+                        existing_document = document_form.instance
+                        document.file = existing_document.file  # Retain previous file
+                    
                     document.save()
             
+            formset.save()
             return super().form_valid(form)
-        
+    
         return self.form_invalid(form)
+
 
 class CaseDeleteView(DeleteView):
     model = Case

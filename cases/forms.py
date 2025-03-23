@@ -2,6 +2,7 @@ from django import forms
 from .models import Case, Client, Lawyer
 from .models import Document
 from django.forms import inlineformset_factory
+from file_resubmit.widgets import ResubmitFileWidget
 
 
 class DocumentForm(forms.ModelForm):
@@ -30,6 +31,7 @@ DocumentFormSet = inlineformset_factory(
 #         # template_name = 'cases/case_form.html'
 
 class CaseForm(forms.ModelForm):
+    attachment = forms.FileField(widget=ResubmitFileWidget, required=False)
     class Meta:
         model = Case
         fields = ['title', 'client', 'lawyer', 'status',  'description']
