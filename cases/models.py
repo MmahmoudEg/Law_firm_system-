@@ -41,7 +41,6 @@ class Case(models.Model):
         ('CRIMINAL', 'جنائي'),
         ('CIVIL', 'مدني'),
         ('ADMIN', 'اداري'),
-
     )
 
     case_number = models.CharField(max_length=20, unique=True, blank=False, null=False)

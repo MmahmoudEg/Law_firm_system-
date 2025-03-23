@@ -109,6 +109,15 @@
             </div>
         </div>
     </nav>
+    {% if user.is_authenticated %}
+        <form id="logout-form" method="post" action="{% url 'cases:logout' %}" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">تسجيل الخروج</button>
+        </form>
+    {% else %}
+        <a href="{% url 'cases:login' %}" class="btn btn-primary">تسجيل الدخول</a>
+    {% endif %}
+
 </header>
 <main role="main" class="container mt-4">
     {% block content %}

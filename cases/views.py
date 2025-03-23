@@ -10,6 +10,43 @@ from django.forms import inlineformset_factory
 from .models import Case, Document
 from .forms import CaseForm, DocumentFormSet
 
+from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+
+
+# ✅ User Login View (Uses Django's built-in login)
+class CustomLoginView(LoginView):
+    template_name = 'accounts/login.html'  # Create this template
+    redirect_authenticated_user = True  # If logged in, go to home page
+    success_url = '/'  # Redirect after login
+
+# ✅ User Logout View
+class CustomLogoutView(LogoutView):
+    next_page = '/'  # Redirect to home page after logout
+
+# ✅ User Registration View
+from django.shortcuts import render, redirect
+from django.contrib.auth import login
+from django.contrib.auth.forms import UserCreationForm
+
+def register(request):
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)  # Auto-login after registration
+            return redirect('cases:case_list')  # ✅ Redirect to cases list after signup
+        else:
+            print("Form Errors:", form.errors)  # ✅ Debugging: Print errors if form is invalid
+    else:
+        form = UserCreationForm()
+
+    return render(request, 'accounts/register.html', {'form': form})
 
 def add_case(request):
     if request.method == 'POST':
@@ -105,13 +142,13 @@ class LawyerDeleteView(DeleteView):
     success_url = reverse_lazy("cases:lawyer_list")
 
 
-class CaseListView(ListView):
+class CaseListView(LoginRequiredMixin,ListView):
     model = Case
     template_name = "cases/case_list.html"
     context_object_name = 'cases'
     # paginate_by = 10  # Optional pagination
     ordering = ['-created_at']  # newest first
-
+    login_url = 'cases:login'  # Redirect if not logged in
     def get_queryset(self):
         queryset = super().get_queryset()
         search_query = self.request.GET.get('q')

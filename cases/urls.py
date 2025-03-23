@@ -2,6 +2,9 @@ from django.urls import path
 
 from cases import views
 from .views import CaseCreateView
+from django.urls import path
+from django.contrib.auth import views as auth_views
+from .views import CustomLoginView, CustomLogoutView, register
 
 
 app_name = 'cases'  # the prefix before any url
@@ -27,6 +30,9 @@ urlpatterns = [
     path('cases/<int:pk>/delete/', views.CaseDeleteView.as_view(), name='case_delete'),
     path('case/<int:pk>/documents/', views.case_documents, name='case_documents'),
     path('case/create/', CaseCreateView.as_view(), name='case_create'),
-   
+    path('login/', CustomLoginView.as_view(), name='login'),  # ✅ Login URL
+    path('logout/', CustomLogoutView.as_view(), name='logout'),  # ✅ Logout URL
+    path('register/', register, name='register'),  # ✅ Register URL
+
     
 ]
