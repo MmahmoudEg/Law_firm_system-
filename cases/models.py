@@ -36,6 +36,14 @@ class Case(models.Model):
         ('LUXOR_COURT', 'محكمة الأقصر'),
         ('ASWAN_COURT', 'محكمة أسوان'),
     )
+    CASE_TYPE_CHOICES = (
+        ('LEGAL', 'شرعي'),
+        ('CRIMINAL', 'جنائي'),
+        ('CIVIL', 'مدني'),
+        ('ADMIN', 'اداري'),
+
+    )
+
     case_number = models.CharField(max_length=20, unique=True, blank=False, null=False)
     title = models.CharField(max_length=100)
     description = models.TextField()
@@ -43,6 +51,7 @@ class Case(models.Model):
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     lawyer = models.ForeignKey(Lawyer, on_delete=models.CASCADE)
     court = models.CharField(max_length=20, choices=COURT_CHOICES, default='CAIRO_COURT')
+    case_type = models.CharField(max_length=20, choices=CASE_TYPE_CHOICES, default='Legal')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

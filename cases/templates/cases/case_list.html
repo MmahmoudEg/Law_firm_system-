@@ -25,6 +25,7 @@
         <tr>
             <th>التاريخ</th>
             <th>رقم القضية</th>
+            <th>نوع القضية</th>
             <th>المحكمة</th>
             <th>العنوان</th>
             <th>الحاله</th>
@@ -44,6 +45,7 @@
                     {{ case.case_number }}
                 </a>
             </td>
+            <td>{{ case.get_case_type_display }}</td>
             <td>{{ case.get_court_display }}</td>
             <td>{{ case.title }}</td>
             <td>{{ case.get_status_display }}</td>

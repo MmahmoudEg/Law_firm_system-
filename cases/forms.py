@@ -41,7 +41,7 @@ class CaseForm(forms.ModelForm):
     attachment = forms.FileField(widget=ResubmitFileWidget, required=False)
     class Meta:
         model = Case
-        fields = ['case_number','court','title', 'client', 'lawyer', 'status',  'description']
+        fields = ['case_number','court','case_type','title', 'client', 'lawyer', 'status',  'description']
 
 
 
