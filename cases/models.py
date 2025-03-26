@@ -47,7 +47,7 @@ class Case(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField()
     status = models.CharField(max_length=10, choices=STATUS_CHOICES)
-    client = models.ForeignKey(Client, on_delete=models.CASCADE)
+    client = models.ForeignKey(Client, on_delete=models.SET_NULL, null=True)
     lawyer = models.ForeignKey(Lawyer, on_delete=models.CASCADE)
     court = models.CharField(max_length=20, choices=COURT_CHOICES, default='CAIRO_COURT')
     case_type = models.CharField(max_length=20, choices=CASE_TYPE_CHOICES, default='Legal')

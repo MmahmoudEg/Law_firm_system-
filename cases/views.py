@@ -122,7 +122,7 @@ class LawyerListView(ListView):
 class LawyerCreateView(CreateView):
     model = Lawyer
     form_class = LawyerForm
-    template_name = 'cases/lawyer_form.html'
+    template_name = 'lawyers/lawyer_form.html'
     success_url = reverse_lazy('cases:lawyer_list')
 
     # Remove ALL custom logic from form_valid
@@ -158,6 +158,7 @@ class CaseListView(LoginRequiredMixin,ListView):
                 Q(title__icontains=search_query) |
                 Q(description__icontains=search_query) |
                 Q(status__icontains=search_query) |
+                
 
                 # Client related searches
                 Q(client__first_name__icontains=search_query) |
