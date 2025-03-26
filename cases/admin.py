@@ -12,3 +12,7 @@ admin.site.register(Client)
 #     search_fields = ('case_number', 'title')
 
 # admin.site.register(Case, CaseAdmin)
+# Add to admin.py
+from .models import Hearing
+
+admin.site.register(Hearing)

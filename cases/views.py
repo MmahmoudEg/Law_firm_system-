@@ -4,7 +4,7 @@ from .forms import ClientForm, LawyerForm, CaseForm
 from django.urls import reverse_lazy
 from django.db.models import Q
 from django.shortcuts import render, redirect, get_object_or_404
-from .forms import CaseForm
+from .forms import CaseForm,HearingFormSet
 from .models import Case
 from django.forms import inlineformset_factory
 from .models import Case, Document
@@ -269,27 +269,31 @@ class CaseCreateView(CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         if self.request.POST:
-            context['formset'] = DocumentFormSet(self.request.POST, self.request.FILES)
+            context['document_formset'] = DocumentFormSet(self.request.POST, self.request.FILES)
+            context['hearing_formset'] = HearingFormSet(self.request.POST)
         else:
-            context['formset'] = DocumentFormSet(queryset=Document.objects.none())
+            context['document_formset'] = DocumentFormSet()
+            context['hearing_formset'] = HearingFormSet()
         return context
 
     def form_valid(self, form):
         context = self.get_context_data()
-        formset = context['formset']
+        document_formset = context['document_formset']
+        hearing_formset = context['hearing_formset']
         
-        if form.is_valid() and formset.is_valid():
+        if document_formset.is_valid() and hearing_formset.is_valid():
             self.object = form.save()
-            formset.instance = self.object
             
-            # Save documents with case reference
-            for document_form in formset:
-                if document_form.cleaned_data.get('file'):
-                    document = document_form.save(commit=False)
-                    document.case = self.object
-                    document.save()
+            # Save documents
+            document_formset.instance = self.object
+            documents = document_formset.save()
+            
+            # Save hearings
+            hearing_formset.instance = self.object
+            hearings = hearing_formset.save()
             
             return super().form_valid(form)
         
-        return self.form_invalid(form)
+        # If formsets are invalid, re-render with errors
+        return self.render_to_response(self.get_context_data(form=form))
     

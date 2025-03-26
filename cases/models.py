@@ -71,3 +71,23 @@ class Document(models.Model):
     
     def __str__(self):
         return self.title
+    
+# Add to models.py after Document model
+class Hearing(models.Model):
+    case = models.ForeignKey(
+        Case, 
+        on_delete=models.CASCADE,
+        related_name='hearings'
+    )
+    hearing_date = models.DateTimeField()
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['hearing_date']
+        
+    def __str__(self):
+        return f"Hearing on {self.hearing_date.strftime('%Y-%m-%d %H:%M')}"
+
+    class Meta:
+        ordering = ['hearing_date']

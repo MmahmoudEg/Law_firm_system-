@@ -32,6 +32,7 @@
             <th>العميل</th>
             <th>المحامي</th>
             <th>إجراءات</th>
+            <th>الجلسة القادمة</th>
         </tr>
     </thead>
     <tbody>
@@ -57,6 +58,15 @@
                 <a href="{% url 'cases:case_documents' pk=case.pk %}" class="btn btn-sm btn-warning">
                     المستندات
                 </a>
+            </td>
+            <td>
+                {% with next_hearing=case.hearings.first %}
+                    {% if next_hearing %}
+                        {{ next_hearing.hearing_date|date:"Y-m-d H:i" }}
+                    {% else %}
+                        -
+                    {% endif %}
+                {% endwith %}
             </td>
         </tr>
         {% empty %}

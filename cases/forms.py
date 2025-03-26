@@ -57,3 +57,29 @@ class LawyerForm(forms.ModelForm):
         model = Lawyer
         fields = ['first_name', 'last_name', 'email', 'phone']
         # template_name = 'lawyers/lawyer_form.html'
+
+# Add to forms.py
+from .models import Hearing
+
+class HearingForm(forms.ModelForm):
+    class Meta:
+        model = Hearing
+        fields = ('hearing_date', 'notes')
+
+HearingFormSet = inlineformset_factory(
+    Case,
+    Hearing,
+    fields=('hearing_date', 'notes'),
+    extra=1,
+    can_delete=True,
+    widgets={
+        'hearing_date': forms.DateTimeInput(
+            attrs={
+                'type': 'datetime-local',
+                'class': 'form-control'
+            },
+            format='%Y-%m-%dT%H:%M'
+        ),
+        'notes': forms.Textarea(attrs={'class': 'form-control', 'rows': 2})
+    }
+)
