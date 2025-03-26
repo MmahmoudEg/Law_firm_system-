@@ -65,6 +65,24 @@
                     </div>
                 </div>
             </div>
+            {% if upcoming_hearings %}
+<div class="alert alert-warning mt-3">
+    <h5>تذكير: لديك جلسات غدًا</h5>
+    <ul>
+        {% for hearing in upcoming_hearings %}
+            <li>
+                <strong>القضية:</strong> {{ hearing.case.title }} | 
+                <strong>التاريخ:</strong> {{ hearing.hearing_date|date:"Y-m-d H:i" }}
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+{% else %}
+<div class="alert alert-info mt-3">
+    لا توجد جلسات غدًا.
+</div>
+{% endif %}
+
             <p class="text-muted text-center">اكتشف تفاصيل العملاء، وملفات المحاميين، وحالات القضايا بكل سهولة ويسر.</p>
             <div class="row justify-content-center">
 
@@ -105,6 +123,13 @@
     </style>
 
 
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        {% if upcoming_hearings %}
+            alert("📢 لديك جلسات غدًا! تحقق من القائمة في الصفحة الرئيسية.");
+        {% endif %}
+    });
+</script>
 
 
 {% endblock %}

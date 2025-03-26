@@ -40,9 +40,11 @@
         <tr>
             <td>{{ case.created_at|date:"Y-m-d H:i" }}</td>
 
-            <!-- ✅ Clicking this will open the modal and show the description -->
+            <!-- ✅ Clicking this will open the modal and show the description & hearings -->
             <td>
-                <a href="#" class="case-number" data-description="{{ case.description }}" data-bs-toggle="modal" data-bs-target="#caseDescriptionModal">
+                <a href="#" class="case-number" 
+                   data-description="{{ case.description }}" 
+                   data-hearings='[{% for hearing in case.hearings.all %}"{{ hearing.hearing_date|date:'Y-m-d H:i' }}"{% if not forloop.last %}, {% endif %}{% endfor %}]'>
                     {{ case.case_number }}
                 </a>
             </td>
@@ -77,8 +79,9 @@
     </tbody>
 </table>
 
+
 <!-- ✅ Case Description Modal -->
-<div class="modal fade" id="caseDescriptionModal" tabindex="-1" aria-labelledby="caseDescriptionModalLabel" aria-hidden="true">
+<!-- <div class="modal fade" id="caseDescriptionModal" tabindex="-1" aria-labelledby="caseDescriptionModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -93,18 +96,76 @@
             </div>
         </div>
     </div>
+</div> -->
+<!-- ✅ Case Description Modal with Hearings Dates -->
+<!-- Case List (Outside the Modal) -->
+<!-- {% for case in cases %}
+    <span class="case-number"
+          data-description="{{ case.description }}"
+          data-hearings='[{% for hearing in case.hearings.all %}"{{ hearing.hearing_date|date:'Y-m-d H:i' }}"{% if not forloop.last %}, {% endif %}{% endfor %}]'
+          style="cursor: pointer; display: block; margin-bottom: 10px; color: blue;">
+        قضية رقم {{ case.id }}
+    </span>
+{% endfor %} -->
+
+<!-- ✅ Case Description Modal -->
+<!-- Case Description Modal -->
+<div class="modal fade" id="caseDescriptionModal" tabindex="-1" aria-labelledby="caseDescriptionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="caseDescriptionModalLabel">تفاصيل القضية</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p id="modal-case-description"></p>
+                <h6>مواعيد الجلسات:</h6>
+                <ul id="modal-hearing-dates"></ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+            </div>
+        </div>
+    </div>
 </div>
 
-<!-- ✅ JavaScript to Open Modal and Show Description -->
+
+<!-- ✅ JavaScript to Open Modal and Show Case Details & Hearing Dates -->
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.case-number').forEach(function (element) {
-        element.addEventListener('click', function () {
-            const description = this.getAttribute('data-description');
-            document.getElementById('modal-case-description').textContent = description;
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.case-number').forEach(function (element) {
+            element.addEventListener('click', function (event) {
+                event.preventDefault(); // Prevent default link behavior
+
+                const description = this.getAttribute('data-description');
+                const hearings = this.getAttribute('data-hearings') ? JSON.parse(this.getAttribute('data-hearings')) : [];
+
+                document.getElementById('modal-case-description').textContent = description;
+                
+                const hearingsList = document.getElementById('modal-hearing-dates');
+                hearingsList.innerHTML = ""; // Clear previous data
+                
+                hearings.forEach(date => {
+                    const li = document.createElement('li');
+                    li.textContent = date;
+                    hearingsList.appendChild(li);
+                });
+
+                // Ensure previous modals are hidden before opening a new one
+                var modalElement = document.getElementById('caseDescriptionModal');
+                var existingModal = bootstrap.Modal.getInstance(modalElement);
+                if (existingModal) {
+                    existingModal.hide();
+                }
+
+                var modal = new bootstrap.Modal(modalElement);
+                modal.show();
+            });
         });
     });
-});
+
 </script>
+
+    
 
 {% endblock %}

@@ -7,7 +7,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .forms import CaseForm,HearingFormSet
 from .models import Case
 from django.forms import inlineformset_factory
-from .models import Case, Document
+from .models import Case, Document,Hearing
 from .forms import CaseForm, DocumentFormSet
 
 from django.contrib.auth.views import LoginView, LogoutView
@@ -17,7 +17,11 @@ from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
-
+import json
+from django.core.serializers.json import DjangoJSONEncoder
+from django.shortcuts import render
+from django.utils import timezone
+from datetime import timedelta
 
 # ✅ User Login View (Uses Django's built-in login)
 class CustomLoginView(LoginView):
@@ -74,11 +78,14 @@ class HomeView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        tomorrow = timezone.now().date() + timedelta(days=1)
+        
         context['clients_count'] = Client.objects.count()
         context['lawyers_count'] = Lawyer.objects.count()
         context['cases_count'] = Case.objects.count()
-        return context
+        context['upcoming_hearings'] = Hearing.objects.filter(hearing_date__date=tomorrow)
 
+        return context
 
 # Client views
 
@@ -142,37 +149,56 @@ class LawyerDeleteView(DeleteView):
     success_url = reverse_lazy("cases:lawyer_list")
 
 
-class CaseListView(LoginRequiredMixin,ListView):
+class CaseListView(LoginRequiredMixin, ListView):
     model = Case
     template_name = "cases/case_list.html"
-    context_object_name = 'cases'
-    # paginate_by = 10  # Optional pagination
-    ordering = ['-created_at']  # newest first
-    login_url = 'cases:login'  # Redirect if not logged in
+    context_object_name = "cases"
+    ordering = ["-created_at"]  # Newest first
+    login_url = "cases:login"  # Redirect if not logged in
+
     def get_queryset(self):
-        queryset = super().get_queryset()
-        search_query = self.request.GET.get('q')
+        """Filter cases based on search query."""
+        queryset = super().get_queryset().prefetch_related("hearings")  # Optimize DB query
+        search_query = self.request.GET.get("q")
 
         if search_query:
             return queryset.filter(
-                Q(title__icontains=search_query) |
-                Q(description__icontains=search_query) |
-                Q(status__icontains=search_query) |
-                
-
+                Q(title__icontains=search_query)
+                | Q(description__icontains=search_query)
+                | Q(status__icontains=search_query)
                 # Client related searches
-                Q(client__first_name__icontains=search_query) |
-                Q(client__last_name__icontains=search_query) |
-                Q(client__email__icontains=search_query) |
-                Q(client__phone__icontains=search_query) |
-
+                | Q(client__first_name__icontains=search_query)
+                | Q(client__last_name__icontains=search_query)
+                | Q(client__email__icontains=search_query)
+                | Q(client__phone__icontains=search_query)
                 # Lawyer related searches
-                Q(lawyer__first_name__icontains=search_query) |
-                Q(lawyer__last_name__icontains=search_query) |
-                Q(lawyer__email__icontains=search_query) |
-                Q(lawyer__phone__icontains=search_query)
+                | Q(lawyer__first_name__icontains=search_query)
+                | Q(lawyer__last_name__icontains=search_query)
+                | Q(lawyer__email__icontains=search_query)
+                | Q(lawyer__phone__icontains=search_query)
             ).distinct()
-        return queryset.order_by('-created_at')
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        """Add serialized hearing dates to context."""
+        context = super().get_context_data(**kwargs)
+
+        case_data = []
+        for case in context["cases"]:
+            hearings = list(case.hearings.values_list("hearing_date", flat=True))
+            hearings_json = json.dumps(hearings, cls=DjangoJSONEncoder)
+
+            case_data.append(
+                {
+                    "id": case.id,
+                    "description": case.description,  # Ensure your Case model has this field
+                    "hearings": hearings_json,
+                }
+            )
+
+        context["cases"] = case_data  # Override cases with serialized data
+        return context
 
 
 
@@ -214,45 +240,36 @@ class CaseUpdateView(UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+
         if self.request.POST:
-            context['formset'] = DocumentFormSet(
-                self.request.POST, 
-                self.request.FILES, 
-                instance=self.object
-            )
+            context['document_formset'] = DocumentFormSet(self.request.POST, self.request.FILES, instance=self.object)
+            context['hearing_formset'] = HearingFormSet(self.request.POST, instance=self.object)
         else:
-            # Show existing documents + one empty form
-            context['formset'] = DocumentFormSet(
-                instance=self.object,
-                queryset=Document.objects.filter(case=self.object))
+            # ✅ Load existing documents & hearings (Fixing the issue)
+            context['document_formset'] = DocumentFormSet(instance=self.object, queryset=Document.objects.filter(case=self.object))
+            context['hearing_formset'] = HearingFormSet(instance=self.object, queryset=Hearing.objects.filter(case=self.object))
+
         return context
 
     def form_valid(self, form):
         context = self.get_context_data()
-        formset = context['formset']
-        
-        if form.is_valid() and formset.is_valid():
-            self.object = form.save()
-            formset.instance = self.object
-            
-            for document_form in formset:
-                if document_form.cleaned_data.get('DELETE'):
-                    document_form.instance.delete()
-                elif document_form.cleaned_data.get('file'):  # ✅ Only save if a file is uploaded
-                    document = document_form.save(commit=False)
-                    
-                    # Ensure the existing file is retained if no new file is uploaded
-                    if not document_form.cleaned_data.get('file') and document_form.instance.pk:
-                        existing_document = document_form.instance
-                        document.file = existing_document.file  # Retain previous file
-                    
-                    document.save()
+        document_formset = context['document_formset']
+        hearing_formset = context['hearing_formset']
 
-            
-            formset.save()
+        if form.is_valid() and document_formset.is_valid() and hearing_formset.is_valid():
+            self.object = form.save()
+
+            # Save documents
+            document_formset.instance = self.object
+            document_formset.save()
+
+            # Save hearings
+            hearing_formset.instance = self.object
+            hearing_formset.save()
+
             return super().form_valid(form)
-    
-        return self.form_invalid(form)
+
+        return self.render_to_response(self.get_context_data(form=form))
 
 
 class CaseDeleteView(DeleteView):
